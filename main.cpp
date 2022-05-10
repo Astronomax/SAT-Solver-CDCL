@@ -15,9 +15,33 @@ public:
     void fit(const vector<clause> &c) {
         solved = false;
         clear();
+        vector<int> order;
         for (auto &i : c)
+            for (auto &j : i)
+                order.push_back(j.first);
+        sort(order.begin(), order.end());
+        order.erase(unique(order.begin(), order.end()), order.end());
+        for (auto &i : c) {
+            for (auto &j : i) {
+                if (!coords.count(j.first)) {
+                    auto it = lower_bound(order.begin(), order.end(), j.first);
+                    coords[j.first] = (int)(it - order.begin());
+                    coords_t[coords[j.first]] = j.first;
+                }
+            }
+        }
+        vector<clause> compressed(c.size());
+        for (int i = 0; i < c.size(); i++)
+            for (auto &j : c[i])
+                compressed[i].push_back(make_pair(coords[j.first], j.second));
+
+        values.assign(order.size(), -1);
+        level.assign(order.size(), -1);
+        level_time.assign(order.size(), -1);
+        implications.resize(order.size());
+        implications_t.resize(order.size());
+        for (auto &i : compressed)
             add_clause(i);
-        // TODO compress coords
     }
 
     bool solve() {
@@ -65,12 +89,12 @@ private:
         for (auto &i : clauses[conflict])
             implications[i.first].insert(-1); //edges to bottom
 
-        map<int, bool> is_pred;
-        is_pred[-1] = true;
-        for (int i = (int)assignation_order.size() - 1; i >= max(0, level_time[decision_level]); i--) {
+        vector<bool> is_pred(values.size());
+        for (int i = (int)assignation_order.size() - 1; i >= level_time[decision_level]; i--) {
             int current_var = assignation_order[i];
             for (auto &j : implications[current_var])
-                is_pred[current_var] |= is_pred[j];
+                if (j == -1 || is_pred[j])
+                    is_pred[current_var] = true;
         }
 
         int last_decision = assignation_order[level_time[decision_level]];
@@ -79,8 +103,8 @@ private:
             int current_var = assignation_order[i];
             if (is_pred[current_var]) {
                 bool ok = true;
-                queue<int> que;
                 set<int> used;
+                queue<int> que;
                 que.push(last_decision);
                 while (!que.empty()) {
                     int v = que.front();
@@ -90,8 +114,9 @@ private:
                     used.insert(v);
                     if (v == current_var) continue;
                     else if (v == -1) ok = false;
-                    for (auto &j : implications[v])
-                        que.push(j);
+                    if(v != -1)
+                        for (auto &j : implications[v])
+                            que.push(j);
                 }
                 if (ok) UIP = current_var;
             }
@@ -99,19 +124,17 @@ private:
 
         set<int> B;
         queue<int> que;
-        set<int> used;
         for (auto &j : implications[UIP])
             que.push(j);
         while (!que.empty()) {
             int v = que.front();
             que.pop();
-            if (used.find(v) != used.end())
+            if (B.find(v) != B.end())
                 continue;
-            used.insert(v);
+            B.insert(v);
             if (v != -1)
                 for (auto &j : implications[v])
                     que.push(j);
-            B.insert(v);
         }
 
         for (int v : assignation_order) {
@@ -141,6 +164,7 @@ private:
                     max_levels.first = level[j.first];
             }
         }
+
         while ((int)assignation_order.size() - 1 > level_time[max_levels.first]) {
             int current_var = *assignation_order.rbegin();
             level[current_var] = -1;
@@ -220,11 +244,16 @@ private:
     }
 
     void add_clause(clause c) {
+        true_literals.push_back(0);
+        false_literals.push_back(0);
+        clause_unassigned_literals.emplace_back();
+
         sort(c.begin(), c.end());
         c.erase(unique(c.begin(), c.end()), c.end());
+
         for (auto &i : c) {
             literal_clauses[i].push_back((int)clauses.size());
-            if (!values.count(i.first) || values[i.first] == -1) {
+            if (values[i.first] == -1) {
                 unassigned.insert(i.first);
                 clause_unassigned_literals[(int)clauses.size()].insert(i);
             }
@@ -262,20 +291,19 @@ private:
 
     vector<clause> clauses;
     map<literal, vector<int>> literal_clauses;
-    map<int, int> true_literals;
-    map<int, int> false_literals;
-    map<int, set<literal>> clause_unassigned_literals;
-    map<int, int> values;
-    set<int> units;
-    set<int> conflicts;
+    vector<int> true_literals, false_literals;
+    vector<set<literal>> clause_unassigned_literals;
+
+    vector<int> values;
+    set<int> units, conflicts;
     set<int> unassigned;
 
     int decision_level = 0;
-    map<int, int> level;
-    map<int, int> level_time;
+    vector<int> level, level_time;
     vector<int> assignation_order;
-    map<int, set<int>> implications;
-    map<int, set<int>> implications_t;
+    vector<set<int>> implications, implications_t;
+
+    map<int, int> coords, coords_t;
 };
 
 int main() {
