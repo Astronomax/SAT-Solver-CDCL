@@ -1,9 +1,14 @@
+//
+// Created by arrias on 28.05.22.
+//
 #include "CDCL.h"
 #include <algorithm>
 #include <queue>
 
 using std::queue;
 using namespace CDCL;
+
+const int CDCL::SolverState::U;
 
 void SolverState::make_new_decision() {
     int var = *unassigned.begin();
@@ -26,7 +31,6 @@ SolverState::SolverState(Formula &f) : decision_level(0) {
     implications.resize(distinct);
     implications_t.resize(distinct);
 
-    literal_clauses.resize(2 * distinct);
     for (auto &clause: f.get_clauses()) {
         add_clause(clause);
     }
@@ -39,7 +43,7 @@ void SolverState::add_clause(Clause &c) {
 
     c.normalize();
     for (auto literal: c.get_literals()) {
-        literal_clauses[literal.id()].push_back((int) clauses.size());
+        literal_clauses[literal].push_back((int) clauses.size());
 
         if (values[literal.num] == U) {
             unassigned.insert(literal.num);
@@ -62,7 +66,7 @@ void SolverState::set_value(const Literal &l) {
     unassigned.erase(l.num);
     values[l.num] = l.value;
 
-    for (auto &i: literal_clauses[l.id()]) {
+    for (auto &i: literal_clauses[l]) {
         if (clause_unassigned_literals[i].size() == 1)
             if (!true_literals[i])
                 units.erase(i);
@@ -70,7 +74,7 @@ void SolverState::set_value(const Literal &l) {
         clause_unassigned_literals[i].erase(l);
     }
 
-    for (auto &i: literal_clauses[l.get_opposite().id()]) {
+    for (auto &i: literal_clauses[l.get_opposite()]) {
         ++false_literals[i];
         clause_unassigned_literals[i].erase(l.get_opposite());
         if (clause_unassigned_literals[i].empty()) {
@@ -89,14 +93,14 @@ void SolverState::reset_value(int var) {
     unassigned.insert(var);
     Literal l = Literal(var, values[var]);
     values[var] = U;
-    for (auto &i: literal_clauses[l.id()]) {
+    for (auto &i: literal_clauses[l]) {
         --true_literals[i];
         clause_unassigned_literals[i].insert(l);
         if (clause_unassigned_literals[i].size() == 1)
             if (!true_literals[i])
                 units.insert(i);
     }
-    for (auto &i: literal_clauses[l.get_opposite().id()]) {
+    for (auto &i: literal_clauses[l.get_opposite()]) {
         if (clause_unassigned_literals[i].empty()) {
             if (!true_literals[i]) {
                 units.insert(i);
@@ -111,11 +115,11 @@ void SolverState::reset_value(int var) {
     }
 }
 
-std::pair<int, int> SolverState::get_backtrack_level(Clause &conflict_clause) {
+void SolverState::back_jump(Clause &c) {
     std::pair<int, int> max_levels = std::make_pair(0, 0);
-
-    for (auto &j: conflict_clause.get_literals()) {
+    for (auto &j: c.get_literals()) {
         int num = j.num;
+
         if (level[num] < decision_level) {
             if (level[num] > max_levels.second) {
                 max_levels.first = max_levels.second;
@@ -124,12 +128,6 @@ std::pair<int, int> SolverState::get_backtrack_level(Clause &conflict_clause) {
                 max_levels.first = level[num];
         }
     }
-
-    return max_levels;
-}
-
-void SolverState::back_jump(Clause &conflict_clause) {
-    auto max_levels = get_backtrack_level(conflict_clause);
 
     while ((int) assignation_order.size() - 1 > level_time[max_levels.first]) {
         int current_var = *assignation_order.rbegin();
@@ -148,12 +146,12 @@ Clause SolverState::analyze_conflict(int conflict) {
     for (auto &i: clauses[conflict].get_literals())
         implications[i.num].insert(U); //edges to bottom
 
-    is_pred.assign(values.size(), false);
-
+    vector<bool> is_pred(values.size());
     for (int i = (int) assignation_order.size() - 1; i >= level_time[decision_level]; i--) {
         int current_var = assignation_order[i];
         for (auto &j: implications[current_var])
-            is_pred[current_var] |= (j == -1 || is_pred[j]);
+            if (j == -1 || is_pred[j])
+                is_pred[current_var] = true;
     }
 
     int last_decision = assignation_order[level_time[decision_level]];
@@ -234,21 +232,18 @@ int SolverState::all_variables_assigned() const {
     return unassigned.empty();
 }
 
-void SolverState::remove_conflict(int conflict) {
-    auto conflict_clause = analyze_conflict(conflict);
-    back_jump(conflict_clause);
-    add_clause(conflict_clause);
-}
-
 bool Solver::solve(Formula f) {
     SolverState state(f);
 
     while (!state.all_variables_assigned()) {
         int conflict = state.unit_propagate();
-        if (conflict != U) {
-            if (state.decision_level == 0) return false;
-
-            state.remove_conflict(conflict);
+        if (conflict != state.U) {
+            if (state.decision_level == 0) {
+                return false;
+            }
+            auto conflict_clause = state.analyze_conflict(conflict);
+            state.back_jump(conflict_clause);
+            state.add_clause(conflict_clause);
         } else if (!state.all_variables_assigned()) {
             state.make_new_decision();
         }

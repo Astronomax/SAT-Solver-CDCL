@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/hand_test.dir/src/Entities.cpp.o CMakeFiles/hand_test.dir/src/CDCL.cpp.o CMakeFiles/hand_test.dir/src/submain.cpp.o -o hand_test 
