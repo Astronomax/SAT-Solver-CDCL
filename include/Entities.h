@@ -1,7 +1,3 @@
-//
-// Created by arrias on 28.05.22.
-//
-
 #ifndef CDCL_SAT_SOLVER_ENTITIES_H
 #define CDCL_SAT_SOLVER_ENTITIES_H
 
@@ -19,6 +15,8 @@ struct Literal {
 
     Literal get_opposite() const;
 
+    int id() const;
+
     bool operator<(const Literal &other) const;
 
     bool operator==(const Literal &other) const;
@@ -29,7 +27,7 @@ struct Literal {
 struct Clause {
     void add_literal(const Literal &l);
 
-    vector<Literal> get_literals();
+    vector<Literal> &get_literals();
 
     void normalize();
 
@@ -44,8 +42,6 @@ struct Formula {
 
     vector<Clause> &get_clauses();
 
-    vector<int> get_literal_nums();
-
     Interpretation getInterpretationByAns(const vector<bool> &ans);
 
     size_t compress(); // return count distinct variables
@@ -53,10 +49,6 @@ private:
     vector<Clause> clauses;
 
     map<int, int> coords, coords_t; // invariant: coords_t[coords[a]] = a
-};
-
-class SATSolver {
-    virtual bool solve(Formula f) = 0;
 };
 
 #endif //CDCL_SAT_SOLVER_ENTITIES_H

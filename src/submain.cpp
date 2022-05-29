@@ -1,6 +1,3 @@
-//
-// Created by arrias on 28.05.22.
-//
 #include "CDCL.h"
 #include <iostream>
 

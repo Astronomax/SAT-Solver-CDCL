@@ -1,6 +1,3 @@
-//
-// Created by arrias on 28.05.22.
-//
 #include "Entities.h"
 #include <algorithm>
 
@@ -12,31 +9,29 @@ vector<Clause> &Formula::get_clauses() {
     return clauses;
 }
 
-vector<int> Formula::get_literal_nums() {
+vector<int> get_unique_literal_nums(Formula &f) {
     vector<int> ret;
-    for (auto &i: clauses) {
-        auto it = i.get_literals();
-        vector<int> literal_nums;
-        std::transform(it.begin(), it.end(), back_inserter(literal_nums), [ ](Literal &l) { return l.num; });
-        ret.insert(ret.end(), literal_nums.begin(), literal_nums.end());
+    for (auto &i: f.get_clauses()) {
+        auto &it = i.get_literals();
+        std::transform(it.begin(), it.end(), std::back_inserter(ret), [ ](Literal &l) { return l.num; });
     }
+    std::sort(ret.begin(), ret.end());
+    ret.erase(std::unique(ret.begin(), ret.end()), ret.end());
     return ret;
 }
 
 size_t Formula::compress() {
-    auto literalNums = get_literal_nums();
-    std::sort(literalNums.begin(), literalNums.end());
-    literalNums.erase(std::unique(literalNums.begin(), literalNums.end()), literalNums.end());
+    auto literalNums = get_unique_literal_nums(*this);
 
     for (int i = 0; i < literalNums.size(); ++i) {
         coords[literalNums[i]] = i;
         coords_t[i] = literalNums[i];
     }
 
-    auto literals = clauses;
+    auto old_clauses = clauses;
     clauses.clear();
 
-    for (auto &i: literals) {
+    for (auto &i: old_clauses) {
         Clause newClause;
         for (auto j: i.get_literals()) {
             newClause.add_literal(Literal(coords[j.num], j.value));
@@ -64,7 +59,7 @@ void Clause::add_literal(const Literal &l) {
     literals.push_back(l);
 }
 
-vector<Literal> Clause::get_literals() {
+vector<Literal> &Clause::get_literals() {
     return literals;
 }
 
@@ -87,6 +82,10 @@ bool Literal::operator==(const Literal &other) const {
 
 bool Literal::operator!=(const Literal &other) const {
     return !(*this == other);
+}
+
+int Literal::id() const {
+    return (num << 1) + value;
 }
 
 

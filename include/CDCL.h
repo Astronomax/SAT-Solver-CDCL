@@ -1,6 +1,3 @@
-//
-// Created by arrias on 28.05.22.
-//
 #ifndef CDCL_SAT_SOLVER_CDCL_SOLVER_H
 #define CDCL_SAT_SOLVER_CDCL_SOLVER_H
 
@@ -10,9 +7,14 @@
 
 using std::map;
 using std::set;
+using std::vector;
 
 namespace CDCL {
+    const int U = -1;
+
     struct SolverState {
+        std::pair<int, int> get_backtrack_level(Clause &conflict_clause);
+
         SolverState(Formula &f);
 
         void make_new_decision();
@@ -31,28 +33,28 @@ namespace CDCL {
 
         int all_variables_assigned() const;
 
-        static const int U = -1;
+        void remove_conflict(int conflict);
 
         int decision_level;
+
+        set<int> unassigned;
         set<int> units;
         set<int> conflicts;
-        set<int> unassigned;
+
         vector<int> values;
         vector<Clause> clauses;
-
         vector<int> level, level_time;
         vector<int> assignation_order;
         vector<set<int>> implications, implications_t;
         vector<int> true_literals;
         vector<int> false_literals;
         vector<set<Literal>> clause_unassigned_literals;
-
-        map<Literal, vector<int>> literal_clauses;
+        vector<vector<int>> literal_clauses;
+        vector<int> is_pred;
     };
 
-    class Solver : public SATSolver {
-    public:
-        virtual bool solve(Formula f) override;
+    struct Solver {
+        bool solve(Formula f);
     };
 }
 
