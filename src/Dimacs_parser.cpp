@@ -38,10 +38,6 @@ Formula dimacs_parser::parse(std::ifstream &input_file) {
                 clause.add_literal(literal);
             }
         }
-        if(variable == 0 && !stream.eof())
-            throw std::runtime_error("Characters found after zero");
-        if(variable != 0 && stream.eof())
-            throw std::runtime_error("Each line must end with zero");
         formula.add_clause(clause);
         ++read_clauses;
     }
