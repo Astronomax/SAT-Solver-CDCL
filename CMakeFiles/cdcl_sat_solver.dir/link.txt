@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/cdcl_sat_solver.dir/tests/main.cpp.o CMakeFiles/cdcl_sat_solver.dir/src/Entities.cpp.o CMakeFiles/cdcl_sat_solver.dir/src/CDCL.cpp.o CMakeFiles/cdcl_sat_solver.dir/src/dimacs_parser.cpp.o -o cdcl_sat_solver 

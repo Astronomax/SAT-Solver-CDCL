@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.16)
 project(cdcl_sat_solver)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -6,3 +6,4 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(include)
 add_executable(cdcl_sat_solver tests/main.cpp src/Entities.cpp src/CDCL.cpp src/Dimacs_parser.cpp)
 add_executable(hand_test  src/Entities.cpp src/CDCL.cpp src/submain.cpp)
+add_executable(measurements measurements/main.cpp src/Entities.cpp src/CDCL.cpp src/Dimacs_parser.cpp)

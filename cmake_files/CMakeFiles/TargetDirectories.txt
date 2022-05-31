@@ -1,0 +1,5 @@
+/home/feggie/MyData/cdcl-sat-solver/cmake_files/CMakeFiles/rebuild_cache.dir
+/home/feggie/MyData/cdcl-sat-solver/cmake_files/CMakeFiles/edit_cache.dir
+/home/feggie/MyData/cdcl-sat-solver/cmake_files/CMakeFiles/measurements.dir
+/home/feggie/MyData/cdcl-sat-solver/cmake_files/CMakeFiles/hand_test.dir
+/home/feggie/MyData/cdcl-sat-solver/cmake_files/CMakeFiles/cdcl_sat_solver.dir

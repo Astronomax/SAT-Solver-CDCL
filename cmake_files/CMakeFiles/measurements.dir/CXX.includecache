@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/CDCL.h
+Entities.h
+../include/Entities.h
+map
+-
+set
+-
+
+../include/Dimacs_parser.h
+CDCL.h
+../include/CDCL.h
+fstream
+-
+
+../include/Entities.h
+vector
+-
+map
+-
+
+/home/feggie/MyData/cdcl-sat-solver/measurements/main.cpp
+CDCL.h
+/home/feggie/MyData/cdcl-sat-solver/measurements/CDCL.h
+iostream
+-
+Dimacs_parser.h
+/home/feggie/MyData/cdcl-sat-solver/measurements/Dimacs_parser.h
+fstream
+-
+sstream
+-
+iomanip
+-
+

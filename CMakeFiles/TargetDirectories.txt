@@ -1,4 +1,0 @@
-/home/astronomax/cdcl-sat-solver/CMakeFiles/rebuild_cache.dir
-/home/astronomax/cdcl-sat-solver/CMakeFiles/edit_cache.dir
-/home/astronomax/cdcl-sat-solver/CMakeFiles/hand_test.dir
-/home/astronomax/cdcl-sat-solver/CMakeFiles/cdcl_sat_solver.dir
