@@ -110,7 +110,6 @@ void measure_inputs(std::string inputs_fname, std::string output_fname, bool is_
         measurement cur = measurement(input_fname, get_clauses_ct(formula), get_literals_ct(formula), _time, is_sats_inputs);
         done.push_back(cur);
         done_names[input_fname] = 1;
-        break;
     }
 
     std::ofstream out(output_fname);    
