@@ -6,78 +6,120 @@
 #include <sstream>
 #include <iomanip>
 
-using std::cin;
-using std::cout;
-using std::endl;
+const std::string sats_inputs_file_name = "../sats_inputs.txt";
+const std::string unsats_inputs_file_name = "../unsats_inputs.txt";
+const std::string measurements_file_name = "../measurements.txt";
+const std::string bad_inputs_file_name = "../bad_inputs.txt";
 
-namespace time_ {
-	clock_t start_time;
-	double get_time() {
-		return (double)(clock() - start_time) / CLOCKS_PER_SEC;
-	}
+class measurement {
+public:
+    measurement(std::string input_name_, size_t clause_ct_, size_t literals_ct_, double time_, bool is_sat_) : 
+        input_name(input_name_),
+        clause_ct(clause_ct_), 
+        literals_ct(literals_ct_),
+        time(time_),
+        is_sat(is_sat_) {};
+    
+    void write_in_file(std::ofstream &file) {
+        file<<std::fixed<<std::setprecision(2)<<input_name<<" "<<clause_ct<<" "<<literals_ct<<" "<<time<<" "<<(int)is_sat<<"\n";
+        std::cout<<std::fixed<<std::setprecision(2)<<input_name<<" "<<clause_ct<<" "<<literals_ct<<" "<<time<<" "<<(int)is_sat<<"\n";
+    }
+
+    std::string get_input_name() const { return input_name; }
+
+private:
+    std::string input_name;
+    size_t clause_ct, literals_ct;
+    double time = 0;
+    bool is_sat = 0;
+};
+
+
+inline size_t get_clauses_ct(Formula &f) {
+    return f.get_clauses().size();
 }
 
-const std::string sats_input_file_names = "../sats_input_file_names.txt";
-const std::string unsats_input_file_names = "../unsats_input_file_names.txt";
+inline size_t get_literals_ct(Formula &f) {
+    size_t ct = 0;
+    for(auto &clause : f.get_clauses())
+        ct += clause.get_literals().size();
+    return ct;
+}
 
-int main(int argc, char *argv[]) {
-    std::ifstream in(sats_input_file_names);
-    map<int, std::vector<double>> time_sats;
-    int it=0;
+std::string get_till_space(std::string line, size_t &it) {
+    std::string ret="";
+    for(;it<line.size();++it) {
+        if(line[it]==' ') { ++it; break; };
+        ret+=line[it];
+    }
+    return ret;
+}
+
+measurement parse_line(std::string line) {
+    std::string input_name = "";
+    size_t clause_ct, literals_ct;
+    double time = 0;
+    bool is_sat = 0;
+
+    size_t it=0;
+    input_name = get_till_space(line, it);
+    clause_ct = std::stoi(get_till_space(line, it));
+    literals_ct = std::stoi(get_till_space(line, it));
+    time = std::stod(get_till_space(line, it));
+    is_sat = (get_till_space(line, it)[0]=='1');
+
+    return measurement(input_name, clause_ct, literals_ct, time, is_sat);
+}
+
+
+void get_measured(std::string measurements_fname, std::vector<measurement> &v) {
+    std::ifstream in(measurements_fname);
+    for (std::string line; std::getline(in, line);)
+        v.push_back(parse_line(line));
+}
+
+void measure_inputs(std::string inputs_fname, std::string output_fname, bool is_sats_inputs) {
+    std::vector<measurement> done;
+    get_measured(measurements_file_name, done);
+
+    std::map<std::string, bool> done_names;
+    for(auto &meas : done)
+        done_names[meas.get_input_name()] = 1;
+
+    std::ifstream in(inputs_fname);
     for (std::string line; std::getline(in, line);) {
-        ++it; if(it>0) break;
         line.erase(line.begin());
-        std::ifstream input("../sats"+line);
+        std::string input_fname = (is_sats_inputs?"../sats":"../unsats")+line;
 
-        time_::start_time = clock();
+        if(done_names.find(input_fname)!=done_names.end())
+            continue;
+        
+        std::ifstream input(input_fname);
+        
         //
         Formula formula = dimacs_parser::parse(input);
+        //        
+        time_::start_time = clock();
+        //
         CDCL::Solver s;
         s.solve(formula);
         //
         double _time = time_::get_time();
-        time_sats[formula.get_clauses().size()].push_back(_time);
+        //
 
-        std::cout<<"../sats"+line<<" pokazal "<<_time<<" na "<<formula.get_clauses().size()<<"\n";
+        measurement cur = measurement(input_fname, get_clauses_ct(formula), get_literals_ct(formula), _time, is_sats_inputs);
+        done.push_back(cur);
+        done_names[input_fname] = 1;
+        break;
     }
 
-    in = std::ifstream(unsats_input_file_names);
-    map<int, std::vector<double>> time_unsats;
-    it=0;
-    for (std::string line; std::getline(in, line);) {
-        std::getline(in, line);
-        ++it; if(it>3) break;
-        line.erase(line.begin());
-        std::ifstream input("../unsats"+line);
-        //std::cout<<"../unsats"+line<<"\n\n";
+    std::ofstream out(output_fname);    
+    for(auto &meas : done)
+        meas.write_in_file(out);
+}
 
-        time_::start_time = clock();
-        
-        Formula formula = dimacs_parser::parse(input);
-        std::cout<<"../unsats"+line<<" pokazal "<<0<<" na "<<formula.get_clauses().size()<<"\n";
-        CDCL::Solver s;
-        s.solve(formula);
-        
-        double _time = time_    ::get_time();
-        time_unsats[formula.get_clauses().size()].push_back(_time);
-        std::cout<<"../unsats"+line<<" pokazal "<<_time<<" na "<<formula.get_clauses().size()<<"\n";
-    }
-
-    for(auto &el : time_sats) {
-        double sum=0,ct=el.second.size();
-        for(double el : el.second)
-            sum+=el;
-
-        std::cout<<std::fixed<<std::setprecision(3)<<el.first<<" "<<sum/ct<<"\n";
-    }
-    std::cout<<"\n\n";
-    for(auto &el : time_unsats) {
-        double sum=0,ct=el.second.size();
-        for(double el : el.second)
-            sum+=el;
-
-        std::cout<<std::fixed<<std::setprecision(3)<<el.first<<" "<<sum/ct<<"\n";
-    }
-
+int main(int argc, char *argv[]) {
+    measure_inputs(unsats_inputs_file_name, measurements_file_name, 0);
+    measure_inputs(sats_inputs_file_name, measurements_file_name, 1);
     return 0;
 }

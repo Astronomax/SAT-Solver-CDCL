@@ -8,6 +8,10 @@
 using std::queue;
 using namespace CDCL;
 
+double time_::get_time() {
+    return (double)(clock() - start_time) / CLOCKS_PER_SEC;
+}
+
 const int CDCL::SolverState::U;
 
 void SolverState::make_new_decision() {
@@ -233,9 +237,14 @@ int SolverState::all_variables_assigned() const {
 }
 
 bool Solver::solve(Formula f) {
+    time_::start_time = clock();
+
     SolverState state(f);
 
     while (!state.all_variables_assigned()) {
+        if(time_::get_time()>180)
+            break;
+
         int conflict = state.unit_propagate();
         if (conflict != state.U) {
             if (state.decision_level == 0) {
