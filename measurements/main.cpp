@@ -22,7 +22,7 @@ public:
     
     void write_in_file(std::ofstream &file) {
         file<<std::fixed<<std::setprecision(2)<<input_name<<" "<<clause_ct<<" "<<literals_ct<<" "<<time<<" "<<(int)is_sat<<"\n";
-        std::cout<<std::fixed<<std::setprecision(2)<<input_name<<" "<<clause_ct<<" "<<literals_ct<<" "<<time<<" "<<(int)is_sat<<"\n";
+        //std::cout<<std::fixed<<std::setprecision(2)<<input_name<<" "<<clause_ct<<" "<<literals_ct<<" "<<time<<" "<<(int)is_sat<<"\n";
     }
 
     std::string get_input_name() const { return input_name; }
@@ -76,9 +76,12 @@ void get_measured(std::string measurements_fname, std::vector<measurement> &v) {
     std::ifstream in(measurements_fname);
     for (std::string line; std::getline(in, line);)
         v.push_back(parse_line(line));
+    in.close();
 }
 
-void measure_inputs(std::string inputs_fname, std::string output_fname, bool is_sats_inputs) {
+bool measure_inputs(std::string inputs_fname, std::string output_fname, bool is_sats_inputs) {
+    bool ret=0;
+    
     std::vector<measurement> done;
     get_measured(measurements_file_name, done);
 
@@ -87,6 +90,7 @@ void measure_inputs(std::string inputs_fname, std::string output_fname, bool is_
         done_names[meas.get_input_name()] = 1;
 
     std::ifstream in(inputs_fname);
+    int ct=0;
     for (std::string line; std::getline(in, line);) {
         line.erase(line.begin());
         std::string input_fname = (is_sats_inputs?"../sats":"../unsats")+line;
@@ -99,26 +103,41 @@ void measure_inputs(std::string inputs_fname, std::string output_fname, bool is_
         //
         Formula formula = dimacs_parser::parse(input);
         //        
-        time_::start_time = clock();
+        clock_t start = clock();
         //
         CDCL::Solver s;
         s.solve(formula);
         //
-        double _time = time_::get_time();
+        double _time = time_::get_time(start);
         //
+
+        input.close();
 
         measurement cur = measurement(input_fname, get_clauses_ct(formula), get_literals_ct(formula), _time, is_sats_inputs);
         done.push_back(cur);
         done_names[input_fname] = 1;
+        ret=1;
+
+        ++ct;
+        if(ct==10) break;
     }
+    in.close();
 
     std::ofstream out(output_fname);    
     for(auto &meas : done)
         meas.write_in_file(out);
+    out.close();
+
+    return ret;
 }
 
 int main(int argc, char *argv[]) {
-    measure_inputs(unsats_inputs_file_name, measurements_file_name, 0);
-    measure_inputs(sats_inputs_file_name, measurements_file_name, 1);
+    while(true) {
+        int c=0;
+        c+=measure_inputs(unsats_inputs_file_name, measurements_file_name, 0);
+        c+=measure_inputs(sats_inputs_file_name, measurements_file_name, 1);
+        if(!c)
+            break;
+    }
     return 0;
 }

@@ -12,8 +12,7 @@ using std::map;
 using std::set;
 
 namespace time_ {
-	static clock_t start_time;
-	double get_time();
+	double get_time(clock_t start);
 }
 
 namespace CDCL {

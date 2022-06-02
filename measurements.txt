@@ -1,0 +1,8 @@
+../unsats/dubois100.cnf 800 2400 7.91 0
+../unsats/pret60_25.cnf 160 480 0.06 0
+../sats/uf50-010.cnf 218 654 0.03 1
+../sats/CBS_k3_n100_m435_b90_106.cnf 435 1305 20.65 1
+../unsats/hole6.cnf 133 294 0.11 0
+../unsats/dubois22.cnf 176 528 0.08 0
+../sats/CBS_k3_n100_m441_b30_114.cnf 441 1323 0.94 1
+../sats/CBS_k3_n100_m441_b30_106.cnf 441 1323 0.21 1
