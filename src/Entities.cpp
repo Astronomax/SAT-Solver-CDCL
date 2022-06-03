@@ -1,5 +1,4 @@
 #include "Entities.h"
-#include <algorithm>
 
 void Formula::add_clause(const Clause &c) {
     clauses.push_back(c);
@@ -10,40 +9,31 @@ vector<Clause> &Formula::get_clauses() {
 }
 
 vector<int> Formula::get_literal_nums() {
-    vector<int> ret;
-    for (auto &i: clauses) {
-        auto it = i.get_literals();
-        vector<int> literal_nums;
-        literal_nums.reserve(it.size());
-        for(auto &l : it)
-            literal_nums.push_back(l.num);
-        //std::transform(it.begin(), it.end(), back_inserter(literal_nums), [ ](Literal &l) { return l.num; });
-        ret.insert(ret.end(), literal_nums.begin(), literal_nums.end());
-    }
-    return ret;
+    set<int> ret;
+    for (auto &i: clauses)
+        for(auto &l : i.get_literals())
+            ret.insert(l.num);
+    return {ret.begin(), ret.end()};
 }
 
 size_t Formula::compress() {
-    auto literalNums = get_literal_nums();
-    std::sort(literalNums.begin(), literalNums.end());
-    literalNums.erase(std::unique(literalNums.begin(), literalNums.end()), literalNums.end());
+    vector<int> literalNums = get_literal_nums();
 
     for (int i = 0; i < literalNums.size(); ++i) {
         coords[literalNums[i]] = i;
         coords_t[i] = literalNums[i];
     }
 
-    auto literals = clauses;
+    vector<Clause> prev_clauses = clauses;
     clauses.clear();
 
-    for (auto &i: literals) {
-        Clause newClause;
+    for (auto &i: prev_clauses) {
+        Clause new_clause;
         for (auto j: i.get_literals()) {
-            newClause.add_literal(Literal(coords[j.num], j.value));
+            new_clause.add_literal(Literal(coords[j.num], j.value));
         }
-        add_clause(newClause);
+        add_clause(new_clause);
     }
-
     return literalNums.size();
 }
 
@@ -82,18 +72,15 @@ Literal Literal::get_opposite() const {
 }
 
 bool Literal::operator<(const Literal &other) const {
-    if (num != other.num) {
-        return num < other.num;
-    }
-    return value < other.value;
+    return std::make_pair(num, value) < std::make_pair(other.num, other.value);
 }
 
 bool Literal::operator==(const Literal &other) const {
-    return !(*this < other) && !(other < *this);
+    return std::make_pair(num, value) == std::make_pair(other.num, other.value);
 }
 
 bool Literal::operator!=(const Literal &other) const {
-    return !(*this == other);
+    return std::make_pair(num, value) != std::make_pair(other.num, other.value);
 }
 
 

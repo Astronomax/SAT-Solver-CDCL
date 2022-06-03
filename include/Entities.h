@@ -58,7 +58,7 @@ private:
 };
 
 class SATSolver {
-    virtual bool solve(Formula f) = 0;
+    virtual bool solve(const Formula &f) = 0;
 };
 
 #endif //CDCL_SAT_SOLVER_ENTITIES_H
