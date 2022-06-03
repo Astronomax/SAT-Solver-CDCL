@@ -1,5 +1,6 @@
 #include "CDCL.h"
 #include <iostream>
+#include <iomanip>
 #include "Dimacs_parser.h"
 
 using std::cin;

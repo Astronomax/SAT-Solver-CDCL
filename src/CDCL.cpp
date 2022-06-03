@@ -4,7 +4,7 @@ using namespace CDCL;
 
 void SolverState::make_new_decision() {
     int var = *unassigned.begin();
-    set_value(Literal(var, false));
+    set_value(Literal(var, cnt[1][var] > cnt[0][var]));
     assignation_order.push_back(var);
     assignation_time[var] = (int)assignation_order.size() - 1;
     ++decision_level;
@@ -27,7 +27,6 @@ SolverState::SolverState(Formula f) : decision_level(0) {
     literal_clauses[0].resize(distinct);
     literal_clauses[1].resize(distinct);
 
-    vector<int> cnt[2];
     cnt[0].resize(distinct);
     cnt[1].resize(distinct);
 
@@ -39,19 +38,23 @@ SolverState::SolverState(Formula f) : decision_level(0) {
                 trivial = true;
         if(!trivial) non_trivial.push_back(clause);
     }
+    vector<bool> contains[2];
+    contains[0].resize(distinct);
+    contains[1].resize(distinct);
+
     for(auto &clause : non_trivial)
         for(auto &l : clause.get_literals())
-            cnt[(int)l.value][l.num]++;
+            contains[(int)l.value][l.num] = true;
     for(int i = 0; i < distinct; i++) {
-        if (!cnt[0][i] && cnt[1][i])
+        if (!contains[0][i] && contains[1][i])
             values[i] = 1;
-        else if (!cnt[1][i] && cnt[0][i])
+        else if (!contains[1][i] && contains[0][i])
             values[i] = 0;
     }
     for(auto &clause: non_trivial) {
         bool easy_to_sat = false;
         for(auto &l : clause.get_literals())
-            if(!cnt[0][l.num] || !cnt[1][l.num])
+            if(!contains[0][l.num] || !contains[1][l.num])
                 easy_to_sat = true;
         if(!easy_to_sat) add_clause(clause);
     }
@@ -63,6 +66,7 @@ void SolverState::add_clause(const Clause &c) {
     clause_unassigned_literals.emplace_back();
 
     for (auto l: c.get_literals()) {
+        ++cnt[(int)l.value][l.num];
         clauses_with_literal(l).push_back((int) clauses.size());
 
         if (values[l.num] == -1) {

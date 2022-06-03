@@ -5,6 +5,7 @@
 #include <set>
 
 using std::set;
+using std::pair;
 
 namespace CDCL {
     struct SolverState {
@@ -41,6 +42,7 @@ namespace CDCL {
         vector<int> true_literals, false_literals;
         vector<set<Literal>> clause_unassigned_literals;
 
+        vector<int> cnt[2];
         vector<vector<int>> literal_clauses[2];
     };
 
