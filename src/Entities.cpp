@@ -65,6 +65,13 @@ bool Clause::contains(const Literal &l) const {
     return literals.find(l) != literals.end();
 }
 
+bool Clause::is_trivial() const {
+    for(auto &l : literals)
+        if(contains(l.get_opposite()))
+            return true;
+    return false;
+}
+
 Literal::Literal(int num, bool value) : num(num), value(value) {}
 
 Literal Literal::get_opposite() const {

@@ -31,6 +31,8 @@ struct Clause {
 
     bool operator==(const Clause &another);
 
+    bool is_trivial() const;
+
     bool contains(const Literal &l) const;
 
     void remove_literal(const Literal &l);
