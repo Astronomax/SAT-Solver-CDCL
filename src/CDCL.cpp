@@ -40,7 +40,6 @@ void SolverState::add_clause(Clause &c) {
     false_literals.push_back(0);
     clause_unassigned_literals.emplace_back();
 
-    c.normalize();
     for (auto literal: c.get_literals()) {
         literal_clauses[literal].push_back((int) clauses.size());
 
