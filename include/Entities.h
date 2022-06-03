@@ -27,7 +27,7 @@ struct Literal {
 struct Clause {
     void add_literal(const Literal &l);
 
-    set<struct Literal> get_literals() const;
+    const set<struct Literal>& get_literals() const;
 
     bool operator==(const Clause &another);
 
@@ -37,7 +37,6 @@ struct Clause {
 
 private:
     set<Literal> literals;
-
 };
 
 typedef vector<Literal> Interpretation;

@@ -4,6 +4,7 @@
 #include "Entities.h"
 #include <map>
 #include <set>
+#include <unordered_set>
 
 using std::map;
 using std::set;
@@ -22,13 +23,11 @@ namespace CDCL {
 
         void back_jump(Clause &c);
 
-        Clause analyze_conflict(int conflict);
+        Clause analyze_conflict(int conflict) const;
 
         int unit_propagate();
 
-        int all_variables_assigned() const;
-
-        static const int U = -1;
+        bool all_variables_assigned() const;
 
         int decision_level;
         set<int> units;
@@ -40,16 +39,15 @@ namespace CDCL {
         vector<int> level, level_time;
         vector<int> assignation_order, assignation_time;
         vector<set<int>> implications, implications_t;
-        vector<int> true_literals;
-        vector<int> false_literals;
+        vector<int> true_literals, false_literals;
         vector<set<Literal>> clause_unassigned_literals;
 
-        map<Literal, vector<int>> literal_clauses;
+        vector<vector<vector<int>>> literal_clauses;
     };
 
     class Solver : public SATSolver {
     public:
-        virtual bool solve(Formula f) override;
+        bool solve(Formula f) override;
     };
 }
 

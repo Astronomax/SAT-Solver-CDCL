@@ -63,7 +63,7 @@ void Clause::remove_literal(const Literal &l) {
     literals.erase(l);
 }
 
-set<Literal> Clause::get_literals() const {
+const set<Literal>& Clause::get_literals() const {
     return literals;
 }
 

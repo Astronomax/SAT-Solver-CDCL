@@ -4,8 +4,6 @@
 using std::queue;
 using namespace CDCL;
 
-const int CDCL::SolverState::U;
-
 void SolverState::make_new_decision() {
     int var = *unassigned.begin();
     set_value(Literal(var, false));
@@ -19,16 +17,17 @@ void SolverState::make_new_decision() {
 SolverState::SolverState(Formula &f) : decision_level(0) {
     size_t distinct = f.compress();
 
-    values.assign(distinct, U);
-    level.assign(distinct, U);
+    values.assign(distinct, -1);
+    level.assign(distinct, -1);
 
-    level_time.assign(distinct, U);
+    level_time.assign(distinct, -1);
     level_time[decision_level] = -1;
 
     implications.resize(distinct);
     implications_t.resize(distinct);
 
     assignation_time.resize(distinct);
+    literal_clauses.assign(distinct, vector<vector<int>> (2));
 
     for (auto &clause: f.get_clauses()) {
         add_clause(clause);
@@ -41,9 +40,9 @@ void SolverState::add_clause(Clause &c) {
     clause_unassigned_literals.emplace_back();
 
     for (auto literal: c.get_literals()) {
-        literal_clauses[literal].push_back((int) clauses.size());
+        literal_clauses[literal.num][(int)literal.value].push_back((int) clauses.size());
 
-        if (values[literal.num] == U) {
+        if (values[literal.num] == -1) {
             unassigned.insert(literal.num);
             clause_unassigned_literals[(int) clauses.size()].insert(literal);
         } else {
@@ -64,7 +63,7 @@ void SolverState::set_value(const Literal &l) {
     unassigned.erase(l.num);
     values[l.num] = l.value;
 
-    for (auto &i: literal_clauses[l]) {
+    for (auto &i: literal_clauses[l.num][(int)l.value]) {
         if (clause_unassigned_literals[i].size() == 1)
             if (!true_literals[i])
                 units.erase(i);
@@ -72,7 +71,7 @@ void SolverState::set_value(const Literal &l) {
         clause_unassigned_literals[i].erase(l);
     }
 
-    for (auto &i: literal_clauses[l.get_opposite()]) {
+    for (auto &i: literal_clauses[l.num][1 - (int)l.value]) {
         ++false_literals[i];
         clause_unassigned_literals[i].erase(l.get_opposite());
         if (clause_unassigned_literals[i].empty()) {
@@ -90,15 +89,15 @@ void SolverState::set_value(const Literal &l) {
 void SolverState::reset_value(int var) {
     unassigned.insert(var);
     Literal l = Literal(var, values[var]);
-    values[var] = U;
-    for (auto &i: literal_clauses[l]) {
+    values[var] = -1;
+    for (auto &i: literal_clauses[l.num][(int)l.value]) {
         --true_literals[i];
         clause_unassigned_literals[i].insert(l);
         if (clause_unassigned_literals[i].size() == 1)
             if (!true_literals[i])
                 units.insert(i);
     }
-    for (auto &i: literal_clauses[l.get_opposite()]) {
+    for (auto &i: literal_clauses[l.num][1 - (int)l.value]) {
         if (clause_unassigned_literals[i].empty()) {
             if (!true_literals[i]) {
                 units.insert(i);
@@ -129,7 +128,7 @@ void SolverState::back_jump(Clause &c) {
 
     while ((int) assignation_order.size() - 1 > level_time[max_levels.first]) {
         int current_var = *assignation_order.rbegin();
-        level[current_var] = U;
+        level[current_var] = -1;
         for (auto &i: implications_t[current_var])
             implications[i].erase(current_var);
         implications_t[current_var].clear();
@@ -139,7 +138,7 @@ void SolverState::back_jump(Clause &c) {
     decision_level = max_levels.first;
 }
 
-Clause SolverState::analyze_conflict(int conflict) {
+Clause SolverState::analyze_conflict(int conflict) const {
     set<int> atLastLevel;
     Clause learned = clauses[conflict];
     for(auto &i : learned.get_literals())
@@ -182,10 +181,10 @@ int SolverState::unit_propagate() {
         if (!conflicts.empty())
             return *conflicts.begin();
     }
-    return U;
+    return -1;
 }
 
-int SolverState::all_variables_assigned() const {
+bool SolverState::all_variables_assigned() const {
     return unassigned.empty();
 }
 
@@ -193,7 +192,7 @@ bool Solver::solve(Formula f) {
     SolverState state(f);
     while (!state.all_variables_assigned()) {
         int conflict = state.unit_propagate();
-        if (conflict != state.U) {
+        if (conflict != -1) {
             if (state.decision_level == 0) {
                 return false;
             }
