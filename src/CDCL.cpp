@@ -1,8 +1,4 @@
-//
-// Created by arrias on 28.05.22.
-//
 #include "CDCL.h"
-#include <algorithm>
 #include <queue>
 
 using std::queue;
@@ -14,13 +10,14 @@ void SolverState::make_new_decision() {
     int var = *unassigned.begin();
     set_value(Literal(var, false));
     assignation_order.push_back(var);
+    assignation_time[var] = (int)assignation_order.size() - 1;
     ++decision_level;
     level[var] = decision_level;
     level_time[decision_level] = (int) assignation_order.size() - 1;
 }
 
 SolverState::SolverState(Formula &f) : decision_level(0) {
-    int distinct = f.compress();
+    size_t distinct = f.compress();
 
     values.assign(distinct, U);
     level.assign(distinct, U);
@@ -30,6 +27,8 @@ SolverState::SolverState(Formula &f) : decision_level(0) {
 
     implications.resize(distinct);
     implications_t.resize(distinct);
+
+    assignation_time.resize(distinct);
 
     for (auto &clause: f.get_clauses()) {
         add_clause(clause);
@@ -142,72 +141,30 @@ void SolverState::back_jump(Clause &c) {
 }
 
 Clause SolverState::analyze_conflict(int conflict) {
-    Clause res;
-    for (auto &i: clauses[conflict].get_literals())
-        implications[i.num].insert(U); //edges to bottom
+    set<int> atLastLevel;
+    Clause learned = clauses[conflict];
+    for(auto &i : learned.get_literals())
+        if(level[i.num] == decision_level)
+            atLastLevel.insert(assignation_time[i.num]);
 
-    vector<bool> is_pred(values.size());
-    for (int i = (int) assignation_order.size() - 1; i >= level_time[decision_level]; i--) {
-        int current_var = assignation_order[i];
-        for (auto &j: implications[current_var])
-            if (j == -1 || is_pred[j])
-                is_pred[current_var] = true;
-    }
-
-    int last_decision = assignation_order[level_time[decision_level]];
-    int UIP = last_decision;
-    for (int i = level_time[decision_level]; i < (int) assignation_order.size(); i++) {
-        int current_var = assignation_order[i];
-        if (is_pred[current_var]) {
-            bool ok = true;
-            set<int> used;
-            queue<int> que;
-            que.push(last_decision);
-            while (!que.empty()) {
-                int v = que.front();
-                que.pop();
-                if (used.find(v) != used.end())
-                    continue;
-                used.insert(v);
-                if (v == current_var) continue;
-                else if (v == -1) ok = false;
-                if (v != -1)
-                    for (auto &j: implications[v])
-                        que.push(j);
+    while(atLastLevel.size() > 1) {
+        int t = assignation_order[*atLastLevel.rbegin()];
+        for(auto lit: implications_t[t]) {
+            if(learned.contains(Literal(lit, values[lit]))) {
+                if(level[lit] == decision_level)
+                    atLastLevel.erase(assignation_time[lit]);
+                learned.remove_literal(Literal(lit, values[lit]));
             }
-            if (ok) UIP = current_var;
-        }
-    }
-
-    set<int> B;
-    queue<int> que;
-    for (auto &j: implications[UIP])
-        que.push(j);
-    while (!que.empty()) {
-        int v = que.front();
-        que.pop();
-        if (B.find(v) != B.end())
-            continue;
-        B.insert(v);
-        if (v != -1)
-            for (auto &j: implications[v])
-                que.push(j);
-    }
-
-    for (int v: assignation_order) {
-        if (B.find(v) == B.end()) {
-            for (auto &j: implications[v]) {
-                if (B.find(j) != B.end()) {
-                    res.add_literal(Literal(v, 1 ^ values[v]));
-                    break;
-                }
+            else {
+                if (level[lit] == decision_level)
+                    atLastLevel.insert(assignation_time[lit]);
+                learned.add_literal(Literal(lit, !values[lit]));
             }
         }
+        atLastLevel.erase(assignation_time[t]);
+        learned.remove_literal(Literal(t, !values[t]));
     }
-
-    for (auto &i: clauses[conflict].get_literals())
-        implications[i.num].erase(U); //edges to bottom
-    return res;
+    return learned;
 }
 
 int SolverState::unit_propagate() {
@@ -216,6 +173,7 @@ int SolverState::unit_propagate() {
         auto l = *clause_unassigned_literals[c].begin();
         set_value(l);
         assignation_order.push_back(l.num);
+        assignation_time[l.num] = (int)assignation_order.size() - 1;
         level[l.num] = decision_level;
         for (auto &i: clauses[c].get_literals()) {
             if (i == l) continue;
@@ -234,20 +192,18 @@ int SolverState::all_variables_assigned() const {
 
 bool Solver::solve(Formula f) {
     SolverState state(f);
-
     while (!state.all_variables_assigned()) {
         int conflict = state.unit_propagate();
         if (conflict != state.U) {
             if (state.decision_level == 0) {
                 return false;
             }
-            auto conflict_clause = state.analyze_conflict(conflict);
+            Clause conflict_clause = state.analyze_conflict(conflict);
             state.back_jump(conflict_clause);
             state.add_clause(conflict_clause);
         } else if (!state.all_variables_assigned()) {
             state.make_new_decision();
         }
     }
-
     return true;
 }

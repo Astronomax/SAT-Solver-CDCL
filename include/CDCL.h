@@ -1,6 +1,3 @@
-//
-// Created by arrias on 28.05.22.
-//
 #ifndef CDCL_SAT_SOLVER_CDCL_SOLVER_H
 #define CDCL_SAT_SOLVER_CDCL_SOLVER_H
 
@@ -13,7 +10,7 @@ using std::set;
 
 namespace CDCL {
     struct SolverState {
-        SolverState(Formula &f);
+        explicit SolverState(Formula &f);
 
         void make_new_decision();
 
@@ -41,7 +38,7 @@ namespace CDCL {
         vector<Clause> clauses;
 
         vector<int> level, level_time;
-        vector<int> assignation_order;
+        vector<int> assignation_order, assignation_time;
         vector<set<int>> implications, implications_t;
         vector<int> true_literals;
         vector<int> false_literals;

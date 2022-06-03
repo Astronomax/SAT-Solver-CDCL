@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(cdcl_sat_solver)
 
 set(CMAKE_CXX_STANDARD 14)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 
 include_directories(include)
 add_executable(cdcl_sat_solver tests/main.cpp src/Entities.cpp src/CDCL.cpp src/Dimacs_parser.cpp)

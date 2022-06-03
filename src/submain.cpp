@@ -1,6 +1,3 @@
-//
-// Created by arrias on 28.05.22.
-//
 #include "CDCL.h"
 #include <iostream>
 
@@ -9,7 +6,7 @@ using std::cout;
 using std::endl;
 
 int main() {
-    freopen("../input.txt", "r", stdin);
+    freopen("input.txt", "r", stdin);
     int n;
     cin >> n;
     Formula formula;
@@ -19,7 +16,7 @@ int main() {
         while (true) {
             cin >> k;
             if (!k) break;
-            clause.add_literal(Literal(abs(k) - 1, k == abs(k)));
+            clause.add_literal(Literal(abs(k) - 1, k > 0));
         }
         formula.add_clause(clause);
     }

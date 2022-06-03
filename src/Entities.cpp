@@ -1,6 +1,3 @@
-//
-// Created by arrias on 28.05.22.
-//
 #include "Entities.h"
 #include <algorithm>
 
@@ -17,7 +14,10 @@ vector<int> Formula::get_literal_nums() {
     for (auto &i: clauses) {
         auto it = i.get_literals();
         vector<int> literal_nums;
-        std::transform(it.begin(), it.end(), back_inserter(literal_nums), [ ](Literal &l) { return l.num; });
+        literal_nums.reserve(it.size());
+        for(auto &l : it)
+            literal_nums.push_back(l.num);
+        //std::transform(it.begin(), it.end(), back_inserter(literal_nums), [ ](Literal &l) { return l.num; });
         ret.insert(ret.end(), literal_nums.begin(), literal_nums.end());
     }
     return ret;
@@ -55,23 +55,30 @@ Interpretation Formula::getInterpretationByAns(const vector<bool> &ans) {
     return ret;
 }
 
-void Clause::normalize() {
-    std::sort(literals.begin(), literals.end());
-    literals.erase(std::unique(literals.begin(), literals.end()), literals.end());
-}
-
 void Clause::add_literal(const Literal &l) {
-    literals.push_back(l);
+    literals.insert(l);
 }
 
-vector<Literal> Clause::get_literals() {
+void Clause::remove_literal(const Literal &l) {
+    literals.erase(l);
+}
+
+set<Literal> Clause::get_literals() const {
     return literals;
+}
+
+bool Clause::operator==(const Clause &another) {
+    return literals == another.literals;
+}
+
+bool Clause::contains(const Literal &l) const {
+    return literals.find(l) != literals.end();
 }
 
 Literal::Literal(int num, bool value) : num(num), value(value) {}
 
 Literal Literal::get_opposite() const {
-    return Literal(num, !value);
+    return {num, !value};
 }
 
 bool Literal::operator<(const Literal &other) const {
