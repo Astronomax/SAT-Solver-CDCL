@@ -254,4 +254,3 @@
 ./dubois24.cnf
 ./dubois28.cnf
 ./bf2670-001.cnf
-
