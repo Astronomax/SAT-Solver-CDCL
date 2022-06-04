@@ -237,5 +237,9 @@ Interpretation Solver::solve(Formula &f, vector<Clause> *proof) {
             state.make_new_decision();
         }
     }
+
+    if (proof != nullptr) {
+        *proof = state.clauses;
+    }
     return f.getInterpretationByAns(state.values);
 }

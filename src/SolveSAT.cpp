@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
             for (auto &i: res) {
                 cout << "x_" << i.num << " = " << i.value << endl;
             }
+            cout << endl;
         }
     }
 
@@ -72,6 +73,7 @@ int main(int argc, char *argv[]) {
             }
             cout << endl;
         }
+        cout << endl;
     }
 
     if (args.print_time) {
