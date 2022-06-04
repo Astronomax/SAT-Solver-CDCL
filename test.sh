@@ -105,8 +105,8 @@ for t in ${sats[@]}; do
     answer=$($1 "sats/$filename")
     [ "$answer" == "SAT" ] && echo "OK" || exit 1
   done
-  #rm sats.tar.gz
-  #rm -r sats
+  rm sats.tar.gz
+  rm -r sats
 done
 
 for t in ${unsats[@]}; do

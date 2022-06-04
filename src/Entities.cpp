@@ -37,7 +37,7 @@ size_t Formula::compress() {
     return literalNums.size();
 }
 
-Interpretation Formula::getInterpretationByAns(const vector<bool> &ans) {
+Interpretation Formula::getInterpretationByAns(const vector<int> &ans) {
     Interpretation ret;
     for (int i = 0; i < ans.size(); ++i) {
         ret.push_back(Literal(coords_t[i], ans[i]));

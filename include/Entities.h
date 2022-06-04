@@ -27,7 +27,7 @@ struct Literal {
 struct Clause {
     void add_literal(const Literal &l);
 
-    const set<struct Literal>& get_literals() const;
+    const set<struct Literal> &get_literals() const;
 
     bool operator==(const Clause &another);
 
@@ -50,17 +50,13 @@ struct Formula {
 
     vector<int> get_literal_nums();
 
-    Interpretation getInterpretationByAns(const vector<bool> &ans);
+    Interpretation getInterpretationByAns(const vector<int> &ans);
 
     size_t compress(); // return count distinct variables
 private:
     vector<Clause> clauses;
 
     map<int, int> coords, coords_t; // invariant: coords_t[coords[a]] = a
-};
-
-class SATSolver {
-    virtual bool solve(const Formula &f) = 0;
 };
 
 #endif //CDCL_SAT_SOLVER_ENTITIES_H

@@ -9,7 +9,7 @@ using std::pair;
 
 namespace CDCL {
     struct SolverState {
-        explicit SolverState(Formula f);
+        SolverState(Formula &f);
 
         void make_new_decision();
 
@@ -31,7 +31,7 @@ namespace CDCL {
 
         bool all_variables_assigned() const;
 
-        vector<int>& clauses_with_literal(const Literal &l);
+        vector<int> &clauses_with_literal(const Literal &l);
 
         set<Literal> trivial;
 
@@ -52,9 +52,9 @@ namespace CDCL {
         vector<vector<int>> literal_clauses[2];
     };
 
-    class Solver : public SATSolver {
+    class Solver {
     public:
-        bool solve(const Formula &f) override;
+        Interpretation solve(Formula &f, vector<Clause> *proof);
     };
 }
 
