@@ -9,7 +9,7 @@ using std::pair;
 
 namespace CDCL {
     struct SolverState {
-        SolverState(Formula &f);
+        explicit SolverState(Formula f);
 
         void make_new_decision();
 

@@ -8,13 +8,13 @@ void SolverState::make_new_decision() {
     Literal l = (!trivial.empty() ? *trivial.begin() : unassigned.rbegin()->second);
     set_value(l);
     assignation_order.push_back(l.num);
-    assignation_time[l.num] = (int) assignation_order.size() - 1;
+    assignation_time[l.num] = (int)assignation_order.size() - 1;
     ++decision_level;
     level[l.num] = decision_level;
     level_time[decision_level] = (int) assignation_order.size() - 1;
 }
 
-SolverState::SolverState(Formula &f) : decision_level(0) {
+SolverState::SolverState(Formula f) : decision_level(0) {
     int distinct = f.compress();
 
     values.assign(distinct, -1);
@@ -37,7 +37,7 @@ SolverState::SolverState(Formula &f) : decision_level(0) {
         unassigned.insert({literal_active_clauses[1][var], {var, true}});
     }
 
-    for (auto &clause: f.get_clauses()) {
+    for(auto &clause : f.get_clauses()) {
         add_clause(clause);
     }
 }
@@ -50,13 +50,13 @@ void SolverState::update_trivial(int var) {
 }
 
 void SolverState::update_cnt(const Literal &l, int d) {
-    if (values[l.num] == -1) {
+    if(values[l.num] == -1) {
         trivial.erase({l.num, true});
         trivial.erase({l.num, false});
         unassigned.erase({literal_active_clauses[(int) l.value][l.num], l});
     }
-    literal_active_clauses[(int) l.value][l.num] += d;
-    if (values[l.num] == -1) {
+    literal_active_clauses[(int)l.value][l.num] += d;
+    if(values[l.num] == -1) {
         unassigned.insert({literal_active_clauses[(int) l.value][l.num], l});
         update_trivial(l.num);
     }
@@ -88,8 +88,8 @@ void SolverState::add_clause(const Clause &c) {
 
 void SolverState::set_value(const Literal &lit) {
     for (auto &i: clauses_with_literal(lit)) {
-        if (!true_literals[i]) {
-            for (auto &l: clauses[i].get_literals())
+        if(!true_literals[i]) {
+            for(auto &l : clauses[i].get_literals())
                 update_cnt(l, -1);
             if (clause_unassigned_literals[i].size() == 1)
                 units.erase(i);
@@ -126,7 +126,7 @@ void SolverState::reset_value(int var) {
         clause_unassigned_literals[i].insert(lit);
 
         if (!true_literals[i]) {
-            for (auto &l: clauses[i].get_literals())
+            for(auto &l : clauses[i].get_literals())
                 update_cnt(l, 1);
             if (clause_unassigned_literals[i].size() == 1)
                 units.insert(i);
@@ -154,7 +154,7 @@ void SolverState::reset_value(int var) {
 void SolverState::back_jump(Clause &c) {
     int jump = 0;
     for (auto &j: c.get_literals())
-        if (level[j.num] < decision_level)
+        if(level[j.num] < decision_level)
             jump = std::max(jump, level[j.num]);
 
     while ((int) assignation_order.size() - 1 > level_time[jump]) {
@@ -170,18 +170,19 @@ void SolverState::back_jump(Clause &c) {
 Clause SolverState::analyze_conflict(int conflict) const {
     set<int> atLastLevel;
     Clause learned = clauses[conflict];
-    for (auto &i: learned.get_literals())
-        if (level[i.num] == decision_level)
+    for(auto &i : learned.get_literals())
+        if(level[i.num] == decision_level)
             atLastLevel.insert(assignation_time[i.num]);
 
-    while (atLastLevel.size() > 1) {
+    while(atLastLevel.size() > 1) {
         int t = assignation_order[*atLastLevel.rbegin()];
-        for (auto lit: implications_t[t]) {
-            if (learned.contains(Literal(lit, values[lit]))) {
-                if (level[lit] == decision_level)
+        for(auto lit: implications_t[t]) {
+            if(learned.contains(Literal(lit, values[lit]))) {
+                if(level[lit] == decision_level)
                     atLastLevel.erase(assignation_time[lit]);
                 learned.remove_literal(Literal(lit, values[lit]));
-            } else {
+            }
+            else {
                 if (level[lit] == decision_level)
                     atLastLevel.insert(assignation_time[lit]);
                 learned.add_literal(Literal(lit, !values[lit]));
@@ -199,7 +200,7 @@ int SolverState::unit_propagate() {
         auto l = *clause_unassigned_literals[c].begin();
         set_value(l);
         assignation_order.push_back(l.num);
-        assignation_time[l.num] = (int) assignation_order.size() - 1;
+        assignation_time[l.num] = (int)assignation_order.size() - 1;
         level[l.num] = decision_level;
         for (auto &i: clauses[c].get_literals()) {
             if (i == l) continue;
@@ -216,7 +217,7 @@ bool SolverState::all_variables_assigned() const {
 }
 
 vector<int> &SolverState::clauses_with_literal(const Literal &l) {
-    return literal_clauses[(int) l.value][l.num];
+    return literal_clauses[(int)l.value][l.num];
 }
 
 Interpretation Solver::solve(Formula &f, vector<Clause> *proof) {
@@ -233,9 +234,8 @@ Interpretation Solver::solve(Formula &f, vector<Clause> *proof) {
             Clause conflict_clause = state.analyze_conflict(conflict);
             state.back_jump(conflict_clause);
             state.add_clause(conflict_clause);
-        } else if (!state.all_variables_assigned()) {
+        } else if (!state.all_variables_assigned())
             state.make_new_decision();
-        }
     }
 
     if (proof != nullptr) {
