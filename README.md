@@ -1,4 +1,5 @@
 # CDCL SAT Solver
+[![C++ CI](https://github.com/Astronomax/cdcl-sat-solver/actions/workflows/cmake.yml/badge.svg)](https://github.com/Astronomax/cdcl-sat-solver/actions/workflows/cmake.yml)
 
 Solver based on [CDCL](https://en.wikipedia.org/wiki/Conflict-driven_clause_learning) algorithm.  
 
