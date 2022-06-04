@@ -1,60 +1,41 @@
 #include "CDCL.h"
-#include <iostream>
-#include <cassert>
 
 using namespace CDCL;
 
 void SolverState::make_new_decision() {
-    Literal l = (!trivial.empty() ? *trivial.begin() : unassigned.rbegin()->second);
+    int var = unassigned.rbegin()->second;
+    Literal l = {var, literal_clauses[1][var].size() > literal_clauses[0][var].size() };
     set_value(l);
     assignation_order.push_back(l.num);
     assignation_time[l.num] = (int)assignation_order.size() - 1;
     ++decision_level;
     level[l.num] = decision_level;
-    level_time[decision_level] = (int) assignation_order.size() - 1;
+    level_time[decision_level] = (int)assignation_order.size() - 1;
 }
 
 SolverState::SolverState(Formula f) : decision_level(0) {
-    int distinct = f.compress();
+    size_t distinct = f.compress();
 
     values.assign(distinct, -1);
     level.assign(distinct, -1);
-
     level_time.assign(distinct, -1);
     level_time[decision_level] = -1;
-
     implications_t.resize(distinct);
-
     assignation_time.resize(distinct);
     literal_clauses[0].resize(distinct);
     literal_clauses[1].resize(distinct);
+    processed_scores.resize(distinct);
+    actual_scores.resize(distinct);
 
-    literal_active_clauses[0].resize(distinct);
-    literal_active_clauses[1].resize(distinct);
-
-    for(auto &clause : f.get_clauses()) {
+    for(auto &clause : f.get_clauses())
+        for(auto &l : clause.get_literals())
+            ++actual_scores[l.num];
+    processed_scores = actual_scores;
+    for(int var = 0; var < values.size(); var++)
+        if(values[var] == -1)
+            unassigned.insert({processed_scores[var], var});
+    for(auto &clause : f.get_clauses())
         add_clause(clause);
-    }
-}
-
-void SolverState::update_trivial(int var) {
-    if (!literal_active_clauses[0][var] && literal_active_clauses[1][var])
-        trivial.insert({var, true});
-    else if (!literal_active_clauses[1][var] && literal_active_clauses[0][var])
-        trivial.insert({var, false});
-}
-
-void SolverState::update_cnt(const Literal &l, int d) {
-    if(values[l.num] == -1) {
-        trivial.erase({l.num, true});
-        trivial.erase({l.num, false});
-        unassigned.erase({literal_active_clauses[(int) l.value][l.num], l});
-    }
-    literal_active_clauses[(int)l.value][l.num] += d;
-    if(values[l.num] == -1) {
-        unassigned.insert({literal_active_clauses[(int) l.value][l.num], l});
-        update_trivial(l.num);
-    }
 }
 
 void SolverState::add_clause(const Clause &c) {
@@ -63,32 +44,26 @@ void SolverState::add_clause(const Clause &c) {
     clause_unassigned_literals.emplace_back();
 
     for (auto l: c.get_literals()) {
-        update_cnt(l, 1);
         if (values[l.num] == -1)
             clause_unassigned_literals.back().insert(l);
         else {
-            if (values[l.num] == l.value) {
+            if (values[l.num] == l.value)
                 ++true_literals.back();
-            } else {
+            else
                 ++false_literals.back();
-            }
         }
         clauses_with_literal(l).push_back((int) clauses.size());
     }
-    if (clause_unassigned_literals.back().size() == 1) {
+    if (clause_unassigned_literals.back().size() == 1)
         units.insert((int) clauses.size());
-    }
     clauses.push_back(c);
 }
 
 void SolverState::set_value(const Literal &lit) {
     for (auto &i: clauses_with_literal(lit)) {
-        if(!true_literals[i]) {
-            for(auto &l : clauses[i].get_literals())
-                update_cnt(l, -1);
+        if(!true_literals[i])
             if (clause_unassigned_literals[i].size() == 1)
                 units.erase(i);
-        }
         ++true_literals[i];
         clause_unassigned_literals[i].erase(lit);
     }
@@ -106,10 +81,7 @@ void SolverState::set_value(const Literal &lit) {
                 units.insert(i);
         }
     }
-    unassigned.erase({literal_active_clauses[0][lit.num], {lit.num, false}});
-    unassigned.erase({literal_active_clauses[1][lit.num], {lit.num, true}});
-    trivial.erase({lit.num, false});
-    trivial.erase({lit.num, true});
+    unassigned.erase({processed_scores[lit.num], lit.num});
     values[lit.num] = lit.value;
 }
 
@@ -119,13 +91,9 @@ void SolverState::reset_value(int var) {
     for (auto &i: clauses_with_literal(lit)) {
         --true_literals[i];
         clause_unassigned_literals[i].insert(lit);
-
-        if (!true_literals[i]) {
-            for(auto &l : clauses[i].get_literals())
-                update_cnt(l, 1);
+        if (!true_literals[i])
             if (clause_unassigned_literals[i].size() == 1)
                 units.insert(i);
-        }
     }
     for (auto &i: clauses_with_literal(lit.get_opposite())) {
         if (clause_unassigned_literals[i].empty()) {
@@ -140,9 +108,7 @@ void SolverState::reset_value(int var) {
         --false_literals[i];
         clause_unassigned_literals[i].insert(lit.get_opposite());
     }
-    unassigned.insert({literal_active_clauses[0][var], {var, false}});
-    unassigned.insert({literal_active_clauses[1][var], {var, true}});
-    update_trivial(var);
+    unassigned.insert({processed_scores[var], var});
     values[var] = -1;
 }
 
@@ -215,20 +181,34 @@ vector<int> &SolverState::clauses_with_literal(const Literal &l) {
     return literal_clauses[(int)l.value][l.num];
 }
 
+void SolverState::learn_clause(const Clause &c) {
+    ++learned_cnt;
+    for(auto &l : c.get_literals())
+        ++actual_scores[l.num];
+    if(learned_cnt % 64 == 0) {
+        for(auto &i : actual_scores)
+            i /= 2;
+        processed_scores = actual_scores;
+        unassigned.clear();
+        for(int var = 0; var < values.size(); var++)
+            if(values[var] == -1)
+                unassigned.insert({processed_scores[var], var});
+    }
+    add_clause(c);
+}
+
 bool Solver::solve(const Formula &f) {
     SolverState state(f);
     while (!state.all_variables_assigned()) {
         int conflict = state.unit_propagate();
         if (conflict != -1) {
-            if (state.decision_level == 0) {
+            if (state.decision_level == 0)
                 return false;
-            }
             Clause conflict_clause = state.analyze_conflict(conflict);
             state.back_jump(conflict_clause);
-            state.add_clause(conflict_clause);
-        } else if (!state.all_variables_assigned()) {
+            state.learn_clause(conflict_clause);
+        } else if (!state.all_variables_assigned())
             state.make_new_decision();
-        }
     }
     return true;
 }

@@ -5,9 +5,9 @@ sats=(
     "Benchmarks/SAT/RND3SAT/uf50-218.tar.gz"
     "Benchmarks/SAT/RND3SAT/uf75-325.tar.gz"
     "Benchmarks/SAT/RND3SAT/uf100-430.tar.gz"
-    "Benchmarks/SAT/RND3SAT/uf125-538.tar.gz"
-    "Benchmarks/SAT/RND3SAT/uf150-645.tar.gz"
-    "Benchmarks/SAT/RND3SAT/uf175-753.tar.gz"
+#    "Benchmarks/SAT/RND3SAT/uf125-538.tar.gz"
+#    "Benchmarks/SAT/RND3SAT/uf150-645.tar.gz"
+#    "Benchmarks/SAT/RND3SAT/uf175-753.tar.gz"
 #    "Benchmarks/SAT/RND3SAT/uf200-860.tar.gz"
 #    "Benchmarks/SAT/RND3SAT/uf225-960.tar.gz"
 #    "Benchmarks/SAT/RND3SAT/uf250-1065.tar.gz"
@@ -86,8 +86,8 @@ unsats=(
     "Benchmarks/SAT/RND3SAT/uuf75-325.tar.gz"
     "Benchmarks/SAT/RND3SAT/uuf100-430.tar.gz"
     "Benchmarks/SAT/RND3SAT/uuf125-538.tar.gz"
-    "Benchmarks/SAT/RND3SAT/uuf150-645.tar.gz"
-    "Benchmarks/SAT/RND3SAT/uuf175-753.tar.gz"
+#    "Benchmarks/SAT/RND3SAT/uuf150-645.tar.gz"
+#    "Benchmarks/SAT/RND3SAT/uuf175-753.tar.gz"
 #    "Benchmarks/SAT/RND3SAT/uuf200-860.tar.gz"
 #    "Benchmarks/SAT/RND3SAT/uuf225-960.tar.gz"
 #    "Benchmarks/SAT/RND3SAT/uuf250-1065.tar.gz"
@@ -105,8 +105,8 @@ for t in ${sats[@]}; do
     answer=$($1 "sats/$filename")
     [ "$answer" == "SAT" ] && echo "OK" || exit 1
   done
-  #rm sats.tar.gz
-  #rm -r sats
+  rm sats.tar.gz
+  rm -r sats
 done
 
 for t in ${unsats[@]}; do

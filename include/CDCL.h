@@ -13,13 +13,12 @@ namespace CDCL {
 
         void make_new_decision();
 
-        void update_trivial(int var);
-
-        void update_cnt(const Literal &l, int d);
 
         void set_value(const Literal &lit);
 
         void reset_value(int var);
+
+        void learn_clause(const Clause &c);
 
         void add_clause(const Clause &c);
 
@@ -33,12 +32,14 @@ namespace CDCL {
 
         vector<int>& clauses_with_literal(const Literal &l);
 
-        set<Literal> trivial;
+        int learned_cnt = 0;
+        vector<int> processed_scores;
+        vector<int> actual_scores;
 
         int decision_level;
         set<int> units;
         set<int> conflicts;
-        set<pair<int, Literal>> unassigned;
+        set<pair<int, int>> unassigned;
         vector<int> values;
         vector<Clause> clauses;
 
@@ -48,7 +49,6 @@ namespace CDCL {
         vector<int> true_literals, false_literals;
         vector<set<Literal>> clause_unassigned_literals;
 
-        vector<int> literal_active_clauses[2];
         vector<vector<int>> literal_clauses[2];
     };
 
