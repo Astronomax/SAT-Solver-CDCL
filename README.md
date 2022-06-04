@@ -1,11 +1,14 @@
-# CDCL SAT Solver
+# cdcl-sat-solver
 [![C++ CI](https://github.com/Astronomax/cdcl-sat-solver/actions/workflows/cmake.yml/badge.svg)](https://github.com/Astronomax/cdcl-sat-solver/actions/workflows/cmake.yml)
 
-Solver based on [CDCL](https://en.wikipedia.org/wiki/Conflict-driven_clause_learning) algorithm.  
+SAT-solver based on [CDCL](https://en.wikipedia.org/wiki/Conflict-driven_clause_learning) algorithm.  
 
+Decision heuristics:
+*   DLIS
+*   VSIDS (zChaff)
 ## Usage
 ```shell
-./solveSAT -i input.txt -t -l -v 
+./solveSAT -i input.cnf -t -l -v 
 ```
 
 ## Flags
