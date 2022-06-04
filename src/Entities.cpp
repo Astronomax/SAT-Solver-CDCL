@@ -1,8 +1,4 @@
-//
-// Created by arrias on 28.05.22.
-//
 #include "Entities.h"
-#include <algorithm>
 
 void Formula::add_clause(const Clause &c) {
     clauses.push_back(c);
@@ -13,37 +9,31 @@ vector<Clause> &Formula::get_clauses() {
 }
 
 vector<int> Formula::get_literal_nums() {
-    vector<int> ret;
-    for (auto &i: clauses) {
-        auto it = i.get_literals();
-        vector<int> literal_nums;
-        std::transform(it.begin(), it.end(), back_inserter(literal_nums), [ ](Literal &l) { return l.num; });
-        ret.insert(ret.end(), literal_nums.begin(), literal_nums.end());
-    }
-    return ret;
+    set<int> ret;
+    for (auto &i: clauses)
+        for(auto &l : i.get_literals())
+            ret.insert(l.num);
+    return {ret.begin(), ret.end()};
 }
 
 size_t Formula::compress() {
-    auto literalNums = get_literal_nums();
-    std::sort(literalNums.begin(), literalNums.end());
-    literalNums.erase(std::unique(literalNums.begin(), literalNums.end()), literalNums.end());
+    vector<int> literalNums = get_literal_nums();
 
     for (int i = 0; i < literalNums.size(); ++i) {
         coords[literalNums[i]] = i;
         coords_t[i] = literalNums[i];
     }
 
-    auto literals = clauses;
+    vector<Clause> prev_clauses = clauses;
     clauses.clear();
 
-    for (auto &i: literals) {
-        Clause newClause;
+    for (auto &i: prev_clauses) {
+        Clause new_clause;
         for (auto j: i.get_literals()) {
-            newClause.add_literal(Literal(coords[j.num], j.value));
+            new_clause.add_literal(Literal(coords[j.num], j.value));
         }
-        add_clause(newClause);
+        add_clause(new_clause);
     }
-
     return literalNums.size();
 }
 
@@ -55,38 +45,49 @@ Interpretation Formula::getInterpretationByAns(const vector<bool> &ans) {
     return ret;
 }
 
-void Clause::normalize() {
-    std::sort(literals.begin(), literals.end());
-    literals.erase(std::unique(literals.begin(), literals.end()), literals.end());
-}
-
 void Clause::add_literal(const Literal &l) {
-    literals.push_back(l);
+    literals.insert(l);
 }
 
-vector<Literal> Clause::get_literals() {
+void Clause::remove_literal(const Literal &l) {
+    literals.erase(l);
+}
+
+const set<Literal>& Clause::get_literals() const {
     return literals;
+}
+
+bool Clause::operator==(const Clause &another) {
+    return literals == another.literals;
+}
+
+bool Clause::contains(const Literal &l) const {
+    return literals.find(l) != literals.end();
+}
+
+bool Clause::is_trivial() const {
+    for(auto &l : literals)
+        if(contains(l.get_opposite()))
+            return true;
+    return false;
 }
 
 Literal::Literal(int num, bool value) : num(num), value(value) {}
 
 Literal Literal::get_opposite() const {
-    return Literal(num, !value);
+    return {num, !value};
 }
 
 bool Literal::operator<(const Literal &other) const {
-    if (num != other.num) {
-        return num < other.num;
-    }
-    return value < other.value;
+    return std::make_pair(num, value) < std::make_pair(other.num, other.value);
 }
 
 bool Literal::operator==(const Literal &other) const {
-    return !(*this < other) && !(other < *this);
+    return std::make_pair(num, value) == std::make_pair(other.num, other.value);
 }
 
 bool Literal::operator!=(const Literal &other) const {
-    return !(*this == other);
+    return std::make_pair(num, value) != std::make_pair(other.num, other.value);
 }
 
 

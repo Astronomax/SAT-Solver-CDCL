@@ -2,7 +2,6 @@
 #define CDCL_SAT_SOLVER_DIMACS_PARSER_H
 
 #include "CDCL.h"
-
 #include <fstream>
 
 namespace dimacs_parser {

@@ -1,14 +1,12 @@
-//
-// Created by arrias on 28.05.22.
-//
-
 #ifndef CDCL_SAT_SOLVER_ENTITIES_H
 #define CDCL_SAT_SOLVER_ENTITIES_H
 
 #include <vector>
 #include <map>
+#include <set>
 
 using std::map;
+using std::set;
 using std::vector;
 
 struct Literal {
@@ -29,12 +27,18 @@ struct Literal {
 struct Clause {
     void add_literal(const Literal &l);
 
-    vector<Literal> get_literals();
+    const set<struct Literal>& get_literals() const;
 
-    void normalize();
+    bool operator==(const Clause &another);
+
+    bool is_trivial() const;
+
+    bool contains(const Literal &l) const;
+
+    void remove_literal(const Literal &l);
 
 private:
-    vector<Literal> literals;
+    set<Literal> literals;
 };
 
 typedef vector<Literal> Interpretation;
@@ -56,7 +60,7 @@ private:
 };
 
 class SATSolver {
-    virtual bool solve(Formula f) = 0;
+    virtual bool solve(const Formula &f) = 0;
 };
 
 #endif //CDCL_SAT_SOLVER_ENTITIES_H

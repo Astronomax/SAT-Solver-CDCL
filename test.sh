@@ -101,17 +101,20 @@ for t in ${sats[@]}; do
   wget -O sats.tar.gz "$base_url$t"
   mkdir sats
   tar -xvzf sats.tar.gz -C sats | while read -r filename ; do
+    echo $filename
     answer=$($1 "sats/$filename")
     [ "$answer" == "SAT" ] && echo "OK" || exit 1
   done
-  rm sats.tar.gz
-#  rm -r sats
+
+  #rm sats.tar.gz
+  #rm -r sats
 done
 
 for t in ${unsats[@]}; do
   wget -O unsats.tar.gz "$base_url$t"
   mkdir unsats
   tar -xvzf unsats.tar.gz -C unsats | while read -r filename ; do
+    echo $filename
     answer=$($1 "unsats/$filename")
     [ "$answer" == "UNSAT" ] && echo "OK" || exit 1
   done
