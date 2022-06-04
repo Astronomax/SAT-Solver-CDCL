@@ -1,0 +1,11 @@
+./test_N=10
+./test_N=15
+./test_N=20
+./test_N=25
+./test_N=30
+./test_N=35
+./test_N=40
+./test_N=45
+./test_N=50
+./test_N=55
+./test_N=60

@@ -223,8 +223,6 @@ bool Solver::solve(const Formula &f) {
     clock_t start = clock();
 
     SolverState state(f);
-
-    SolverState state(f);
     while (!state.all_variables_assigned()) {
         if(time_::get_time(start)>60)
             break;

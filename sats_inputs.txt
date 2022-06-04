@@ -752,7 +752,6 @@
 ./CBS_k3_n100_m418_b70_107.cnf
 ./CBS_k3_n100_m449_b50_114.cnf
 ./CBS_k3_n100_m411_b70_115.cnf
-./input_file_names.txt
 ./CBS_k3_n100_m449_b70_106.cnf
 ./CBS_k3_n100_m449_b10_106.cnf
 ./CBS_k3_n100_m449_b30_10.cnf

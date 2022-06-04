@@ -234,7 +234,6 @@
 ./UUF125.538.100/uuf125-015.cnf
 ./UUF125.538.100/uuf125-010.cnf
 ./dubois23.cnf
-./unsats_input_file_names.txt
 ./dubois29.cnf
 ./UUF225.960.100/uuf225-018.cnf
 ./UUF225.960.100/uuf225-01.cnf
@@ -255,3 +254,4 @@
 ./dubois24.cnf
 ./dubois28.cnf
 ./bf2670-001.cnf
+

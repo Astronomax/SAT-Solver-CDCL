@@ -1,0 +1,11 @@
+../queenTests/test_N=10 2950 5980 0.03 1
+../queenTests/test_N=15 10375 20945 0.06 1
+../queenTests/test_N=20 25100 50560 15.28 1
+../queenTests/test_N=25 49625 99825 119.44 1
+../queenTests/test_N=30 86450 173740 1528.03 1
+../queenTests/test_N=35 138075 277305 1.03 1
+../queenTests/test_N=40 207000 415520 1.06 1
+../queenTests/test_N=45 295725 593385 1.11 1
+../queenTests/test_N=50 406750 815900 1.10 1
+../queenTests/test_N=55 542575 1088065 1.36 1
+../queenTests/test_N=60 705700 1414880 1.54 1

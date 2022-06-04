@@ -83,6 +83,7 @@ bool measure_inputs(std::string inputs_fname, std::string output_fname, bool is_
     bool ret=0;
     
     std::vector<measurement> done;
+    //get_measured("../queens_measurements.txt", done);
     get_measured(measurements_file_name, done);
 
     std::map<std::string, bool> done_names;
@@ -94,6 +95,7 @@ bool measure_inputs(std::string inputs_fname, std::string output_fname, bool is_
     for (std::string line; std::getline(in, line);) {
         line.erase(line.begin());
         std::string input_fname = (is_sats_inputs?"../sats":"../unsats")+line;
+        //std::string input_fname = (is_sats_inputs?"../sats":"../queenTests")+line;
 
         if(done_names.find(input_fname)!=done_names.end())
             continue;
@@ -119,7 +121,7 @@ bool measure_inputs(std::string inputs_fname, std::string output_fname, bool is_
         ret=1;
 
         ++ct;
-        if(ct==10) break;
+        if(ct==5) break;
     }
     in.close();
 
@@ -131,7 +133,25 @@ bool measure_inputs(std::string inputs_fname, std::string output_fname, bool is_
     return ret;
 }
 
+void unique_measurements(std::string measurements_fname) {
+    std::vector<measurement> done,done_unique;
+    get_measured(measurements_fname, done);
+
+    std::map<std::string, bool> done_names;
+    for(auto &meas : done) {
+        if(!done_names[meas.get_input_name()])
+            done_unique.push_back(meas);
+        done_names[meas.get_input_name()] = 1;
+    }
+
+    std::ofstream out(measurements_fname);    
+    for(auto &meas : done)
+        meas.write_in_file(out);
+    out.close();
+}
+
 int main(int argc, char *argv[]) {
+    //unique_measurements(measurements_file_name);
     while(true) {
         int c=0;
         c+=measure_inputs(unsats_inputs_file_name, measurements_file_name, 0);
@@ -139,5 +159,7 @@ int main(int argc, char *argv[]) {
         if(!c)
             break;
     }
+    //while(true)
+    //    measure_inputs("../queens_inputs.txt", "../queens_measurements.txt", 0);
     return 0;
 }
