@@ -50,6 +50,8 @@ namespace CDCL {
 
         vector<int> literal_active_clauses[2];
         vector<vector<int>> literal_clauses[2];
+
+        std::unordered_map<int, int> coords_t;
     };
 
     class Solver {

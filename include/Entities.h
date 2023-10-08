@@ -2,8 +2,11 @@
 #define CDCL_SAT_SOLVER_ENTITIES_H
 
 #include <vector>
+#include <string>
 #include <map>
 #include <set>
+#include <cstddef>
+#include <unordered_map>
 
 using std::map;
 using std::set;
@@ -50,13 +53,42 @@ struct Formula {
 
     vector<int> get_literal_nums();
 
-    Interpretation getInterpretationByAns(const vector<int> &ans);
+    Interpretation getInterpretationByAns(const vector<int> &ans, const std::unordered_map<int, int> &coords_t);
 
-    size_t compress(); // return count distinct variables
+    std::unordered_map<int, int> compress();
 private:
     vector<Clause> clauses;
-
-    map<int, int> coords, coords_t; // invariant: coords_t[coords[a]] = a
 };
+
+
+
+
+
+enum Op {
+    AND,
+    OR,
+    NOT,
+    NAND,
+    NOR,
+    XOR,
+    NXOR,
+    INPUT
+};
+
+struct Gate {
+    std::vector<Gate*> links;
+    std::vector<Gate*> links_t;
+    Op m_op;
+};
+
+struct Circuit {
+    std::vector<Gate*> inputs;
+    std::unordered_map<std::string, Gate*> gate_by_name;
+    Gate *output;
+};
+
+
+
+
 
 #endif //CDCL_SAT_SOLVER_ENTITIES_H

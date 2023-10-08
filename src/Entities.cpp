@@ -1,4 +1,5 @@
 #include "Entities.h"
+#include <iostream>
 
 void Formula::add_clause(const Clause &c) {
     clauses.push_back(c);
@@ -16,8 +17,9 @@ vector<int> Formula::get_literal_nums() {
     return {ret.begin(), ret.end()};
 }
 
-size_t Formula::compress() {
+std::unordered_map<int, int> Formula::compress() {
     vector<int> literalNums = get_literal_nums();
+    std::unordered_map<int, int> coords, coords_t; // invariant: coords_t[coords[a]] = a
 
     for (int i = 0; i < literalNums.size(); ++i) {
         coords[literalNums[i]] = i;
@@ -29,18 +31,19 @@ size_t Formula::compress() {
 
     for (auto &i: prev_clauses) {
         Clause new_clause;
-        for (auto j: i.get_literals()) {
+        for (auto &j: i.get_literals()) {
             new_clause.add_literal(Literal(coords[j.num], j.value));
         }
         add_clause(new_clause);
     }
-    return literalNums.size();
+    return coords_t;
 }
 
-Interpretation Formula::getInterpretationByAns(const vector<int> &ans) {
+Interpretation Formula::getInterpretationByAns(const vector<int> &ans, const std::unordered_map<int, int> &coords_t) {
     Interpretation ret;
     for (int i = 0; i < ans.size(); ++i) {
-        ret.push_back(Literal(coords_t[i], ans[i]));
+        auto it = coords_t.find(i);
+        ret.push_back(Literal(it->second, ans[i]));
     }
     return ret;
 }

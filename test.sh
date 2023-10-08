@@ -1,3 +1,5 @@
+#!/bin/bash
+
 base_url="https://www.cs.ubc.ca/~hoos/SATLIB/"
 
 sats=(

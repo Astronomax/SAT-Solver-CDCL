@@ -15,7 +15,8 @@ void SolverState::make_new_decision() {
 }
 
 SolverState::SolverState(Formula f) : decision_level(0) {
-    int distinct = f.compress();
+    coords_t = f.compress();
+    int distinct = coords_t.size();
 
     values.assign(distinct, -1);
     level.assign(distinct, -1);
@@ -241,5 +242,5 @@ Interpretation Solver::solve(Formula &f, vector<Clause> *proof) {
     if (proof != nullptr) {
         *proof = state.clauses;
     }
-    return f.getInterpretationByAns(state.values);
+    return f.getInterpretationByAns(state.values, state.coords_t);
 }
