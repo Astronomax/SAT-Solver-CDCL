@@ -68,13 +68,14 @@ Circuit bench_parser::parse(std::ifstream &input_file) {
             }
             case ParsingState::EDGES: {
                 std::vector<std::pair<Op, std::regex>> ops_to_regex = {
-                    {Op::AND, std::regex("(\\w*) = AND\\((\\w*), (\\w*)\\)")},
-                    {Op::OR, std::regex("(\\w*) = OR\\((\\w*), (\\w*)\\)")},
-                    {Op::NOT, std::regex("(\\w*) = NOT\\((\\w*)\\)")},
-                    {Op::NAND, std::regex("(\\w*) = NAND\\((\\w*), (\\w*)\\)")},
-                    {Op::NOR, std::regex("(\\w*) = NOR\\((\\w*), (\\w*)\\)")},
-                    {Op::XOR, std::regex("(\\w*) = XOR\\((\\w*), (\\w*)\\)")},
-                    {Op::NXOR, std::regex("(\\w*) = NXOR\\((\\w*), (\\w*)\\)")}
+                    {Op::AND, std::regex("(\\w*)\\s*=\\s*AND\\((\\w*),\\s*(\\w*)\\)")},
+                    {Op::OR, std::regex("(\\w*)\\s*=\\s*OR\\((\\w*),\\s*(\\w*)\\)")},
+                    {Op::NOT, std::regex("(\\w*)\\s*=\\s*NOT\\((\\w*)\\)")},
+                    {Op::NAND, std::regex("(\\w*)\\s*=\\s*NAND\\((\\w*),\\s*(\\w*)\\)")},
+                    {Op::NOR, std::regex("(\\w*)\\s*=\\s*NOR\\((\\w*),\\s*(\\w*)\\)")},
+                    {Op::XOR, std::regex("(\\w*)\\s*=\\s*XOR\\((\\w*),\\s*(\\w*)\\)")},
+                    {Op::NXOR, std::regex("(\\w*)\\s*=\\s*NXOR\\((\\w*),\\s*(\\w*)\\)")},
+                    {Op::BUFF, std::regex("(\\w*)\\s*=\\s*BUFF\\((\\w*)\\)")}
                 };
 
                 std::smatch m;

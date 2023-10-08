@@ -72,6 +72,7 @@ enum Op {
     NOR,
     XOR,
     NXOR,
+    BUFF,
     INPUT
 };
 

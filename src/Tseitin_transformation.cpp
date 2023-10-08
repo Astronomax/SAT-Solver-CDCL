@@ -186,6 +186,23 @@ int dfs_helper(Gate *gate, Formula &formula, std::unordered_map<Gate*, int> &id_
             assert(ancestor_ids.size() == 0);
             break;
         }
+        case(Op::BUFF): {
+            //std::cout << "NXOR\n";
+            assert(ancestor_ids.size() == 1);
+            {
+                Clause clause;
+                clause.add_literal({ancestor_ids[0], true});
+                clause.add_literal({cur_gate_id, false});
+                formula.add_clause(clause);
+            }
+            {
+                Clause clause;
+                clause.add_literal({ancestor_ids[0], false});
+                clause.add_literal({cur_gate_id, true});
+                formula.add_clause(clause);
+            }
+            break;
+        }
         default: {
             assert(false);
         }
